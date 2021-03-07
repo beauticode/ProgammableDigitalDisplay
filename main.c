@@ -194,37 +194,19 @@ void incrementChar(int8_t digit, int8_t *currentChar) {
 		case ch_p:
 			currentChar[digit]=ch_r;
 		break;
-		/*case ch_q:
-			currentChar[digit]=ch_r;
-		break;*/
 		case ch_r:
 			currentChar[digit]=ch_t;
 		break;
-		/*case ch_s:
-			currentChar[digit]=ch_t;
-		break;*/
 		case ch_t:
 			currentChar[digit]=ch_u;
 		break;
 		case ch_u:
 			currentChar[digit]=ch_y;
 		break;		
-		/*case ch_v:
-			currentChar[digit]=ch_w;
-		break;
-		case ch_w:
-			currentChar[digit]=ch_x;
-		break;
-		case ch_x:
-			currentChar[digit]=ch_y;
-		break;*/
 		case ch_y:
 			currentChar[digit]=0x00;
 		break;
 		case 0x00:
 				currentChar[digit]=ch_0;
-		/*case ch_z:
-			currentChar[digit]=ch_0;
-		break;*/
 	}
 }
