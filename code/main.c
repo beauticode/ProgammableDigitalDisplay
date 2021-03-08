@@ -1,16 +1,22 @@
+/*
+Copyright © 2021, Gary T Smith.
+All rights reserved.
+*/
+//by Gary T Smith: diygary.com/[link] or github.com/beauticode
 #include "tm4c123gh6pm.h"
 #include "stdint.h"
 #include "characters.h"
-//#include "PLL.h"
 void initGPIO(void); //Configures Port B (segment control) and D (digit & LED control) for digital output. Port A (button input) for digital input
 void initSystick(void); //Configures interrupts for quick periodic input state change checking.
 void incrementChar(int8_t digit, int8_t *currentChar); //Increments the currentChar array in main() when called, digits 0-3 
 
 int main(void) {
-	int8_t currentChar[4]={ch_0,ch_1,ch_2,ch_3}; //Pins of current character for each digit, to be currently displayed. Pull definition from characters.h
+	int8_t programmedSets[maxSets][4]={{0x00}};//change to {{ch_a,ch_b,ch_c,0x00},{ch_c,ch_b,ch_a,0x00}} for debug, and set programmedSetsCount 2 & programMode 0.
+	int8_t currentChar[4]={ch_0,ch_0,ch_0,ch_0}; //Pins of current character for each digit, to be currently displayed. Pull definition from characters.h
 	int8_t currentCharPos=digset_1; // Digits 1-4, pull definition from characters.h
 	int8_t programmode=1; //0=program mode, 1=display programmed mode
 	int8_t buttonsPrevVal[6]={0};
+	int8_t currentSet=0,programmedSetsCount=0; //[0-(maxSets-1)]
 	int32_t buttonDataRPrev; //Port A (button) data register previous value,  to check if it has changed.
 	int ticks=0; //Keeps track of systick countdowns every 5ms, useful for display mode when alternating between words
 	initGPIO();
@@ -24,24 +30,48 @@ int main(void) {
 				}
 				buttonsPrevVal[0]=GPIO_PORTE_DATA_R&ch_1;
 			} //No else, just if to support multiple buons being pressed at once
-			if((GPIO_PORTE_DATA_R&but_2)!=buttonsPrevVal[1]) { //If button 1 state has changed
-				if((GPIO_PORTE_DATA_R&but_2)==but_2) { //...and it's currently HIGH
+			if((GPIO_PORTE_DATA_R&but_2)!=buttonsPrevVal[1]) { 
+				if((GPIO_PORTE_DATA_R&but_2)==but_2) { 
 					incrementChar(1,currentChar);
 				}
 				buttonsPrevVal[1]=GPIO_PORTE_DATA_R&but_2;
 			}
-			if((GPIO_PORTE_DATA_R&but_3)!=buttonsPrevVal[2]) { //If button 1 state has changed
-				if((GPIO_PORTE_DATA_R&but_3)==but_3) { //...and it's currently HIGH
+			if((GPIO_PORTE_DATA_R&but_3)!=buttonsPrevVal[2]) { 
+				if((GPIO_PORTE_DATA_R&but_3)==but_3) { 
 					incrementChar(2,currentChar);
 				}
 				buttonsPrevVal[2]=GPIO_PORTE_DATA_R&but_3;
 			}
-			if((GPIO_PORTE_DATA_R&but_4)!=buttonsPrevVal[3]) { //If button 1 state has changed
-				if((GPIO_PORTE_DATA_R&but_4)==but_4) { //...and it's currently HIGH
+			if((GPIO_PORTE_DATA_R&but_4)!=buttonsPrevVal[3]) { 
+				if((GPIO_PORTE_DATA_R&but_4)==but_4) { 
 					incrementChar(3,currentChar);
 				}
 				buttonsPrevVal[3]=GPIO_PORTE_DATA_R&but_3;
-			}			
+			}		
+			if((GPIO_PORTE_DATA_R&but_progerase)!=buttonsPrevVal[4]) { 
+				if((GPIO_PORTE_DATA_R&but_progerase)==but_progerase) { 
+					if(programmode) { //program function
+						if(programmedSetsCount!=maxSets) {
+							programmedSets[programmedSetsCount][0]=currentChar[0];
+							programmedSets[programmedSetsCount][1]=currentChar[1];
+							programmedSets[programmedSetsCount][2]=currentChar[2];
+							programmedSets[programmedSetsCount][3]=currentChar[3];
+							programmedSetsCount++;
+						} else {
+							currentChar[0]=ch_f;currentChar[1]=ch_u;currentChar[2]=ch_l;currentChar[3]=ch_l;
+						}
+					} else {
+						//erase function does not work atm
+					}
+				}
+				buttonsPrevVal[4]=GPIO_PORTE_DATA_R&but_progerase;
+			}		
+			if((GPIO_PORTE_DATA_R&but_playstop)!=buttonsPrevVal[5]) { 
+				if((GPIO_PORTE_DATA_R&but_playstop)==but_playstop) { 
+					programmode=!programmode;
+				}
+				buttonsPrevVal[5]=GPIO_PORTE_DATA_R&but_playstop;
+			}					
 			buttonDataRPrev=GPIO_PORTE_DATA_R;
 		}
 		
@@ -70,12 +100,21 @@ int main(void) {
 			}
 			GPIO_PORTD_DATA_R|=currentCharPos; //Set current digit high
 			ticks++;
-			if(programmode) { //are we in display mode or program mode?
-				
-			} else {
-				if(ticks==200) { //if 1000ms has passed, display next
-					
+		}
+		if(programmode) { //are we in display mode or program mode?		
+			ticks=0;
+		} else {
+			if(ticks==200) { //if 1000ms has passed, display next
+				if(currentSet!=(programmedSetsCount-1)) {
+					currentSet++;
+				} else {
+					currentSet=0;
 				}
+				currentChar[0]=programmedSets[currentSet][0];
+				currentChar[1]=programmedSets[currentSet][1];
+				currentChar[2]=programmedSets[currentSet][2];
+				currentChar[3]=programmedSets[currentSet][3];
+				ticks=0;
 			}
 		}
 	}

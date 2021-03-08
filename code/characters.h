@@ -1,7 +1,10 @@
+/*
+Copyright © 2021, Gary T Smith.
+All rights reserved.
+*/
+//by Gary T Smith: diygary.com/[link] or github.com/beauticode
 #ifndef CHARACTERS_H
 #define CHARACTERS_H
-//by Gary T Smith: diygary.com/[link] or github.com/beauticode
-
 
 /*
 Digits (Port D): For OR operations, leaves LED bit untouched (0)
@@ -22,6 +25,12 @@ Digits (Port D): For AND operations, leaves LED bit untouched (1)
 #define digclr 0xb1 //Clears all digit bits in use (except LED and reserved pins)
 //-----------------------------
 
+/*
+LED (Port D): 
+*/
+//-----------------------------
+#define LEDbit 0x01
+//-----------------------------
 
 /*
 Segments (Port B):
@@ -90,6 +99,9 @@ Systick end-of-countdown flag bit
 #define sysTickReload_Multiplex 79999
 #define sysTickFlag 0x10000
 //-----------------------------
+
+
+#define maxSets 10
 
 
 #endif
